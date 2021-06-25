@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 \defined('ABSPATH') || exit;
 
 const API_PLUGINS_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/plugins';
@@ -21,7 +19,7 @@ const API_PLUGINS_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/plugins
     ]);
 });
 
-\add_filter('plugins_api', function ($result, string $action, $args) {
+\add_filter('plugins_api', function ($result, $action, $args) {
     $searchSlug = isset($args->slug);
     $empty = (object) ['plugins' => [], 'info' => ['results' => 0]];
 
@@ -39,7 +37,7 @@ const API_PLUGINS_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/plugins
 
     $response = \wp_remote_get(
         \add_query_arg(
-            ['per_page' => $args->per_page, 'page' => $paged, 'slug' => $args->slug ?? ''],
+            ['per_page' => $args->per_page, 'page' => $paged, 'slug' => isset($args->slug) ? $args->slug : ''],
             API_PLUGINS_ENDPOINT
         ),
         ['headers' => ['Authorization' => "Bearer {$options['api_key']}"]]
@@ -76,7 +74,7 @@ const API_PLUGINS_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/plugins
 
     $pluginsToUpdate = \json_decode(\wp_remote_retrieve_body($response), true);
 
-    foreach ($pluginsToUpdate['plugins'] ?? [] as $pluginName => $plugin) {
+    foreach (isset($pluginsToUpdate['plugins']) ? $pluginsToUpdate['plugins'] : [] as $pluginName => $plugin) {
         if (false === \array_key_exists($pluginName, $installedPlugins)) {
             continue;
         }
@@ -94,7 +92,7 @@ const API_PLUGINS_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/plugins
 \add_action('admin_enqueue_scripts', static function (): void {
     global $pagenow;
 
-    if ('plugin-install.php' !== $pagenow || ($_GET['tab'] ?? '') !== 'untitled_library') {
+    if ('plugin-install.php' !== $pagenow || (isset($_GET['tab']) ? $_GET['tab'] : '') !== 'untitled_library') {
         return;
     } ?>
     <style>

@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 \defined('ABSPATH') || exit;
 
@@ -8,7 +6,7 @@ const API_THEMES_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/themes';
 
 \add_action('install_themes_untitled_library', 'display_themes_table');
 
-\add_filter('themes_api', function ($result, string $action, $args) {
+\add_filter('themes_api', function ($result, $action, $args) {
     $searchSlug = isset($args->slug);
     $empty = (object) ['themes' => [], 'info' => ['results' => 0]];
 
@@ -65,7 +63,7 @@ const API_THEMES_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/themes';
 
     $themesToUpdate = \json_decode(\wp_remote_retrieve_body($response), true);
 
-    foreach ($themesToUpdate['themes'] ?? [] as $themeName => $theme) {
+    foreach (isset($themesToUpdate['themes']) ? $themesToUpdate['themes'] : [] as $themeName => $theme) {
         if (false === \array_key_exists($themeName, $installedThemes)) {
             continue;
         }
@@ -80,7 +78,7 @@ const API_THEMES_ENDPOINT = 'https://untitledplugin.com/api/untitled/v1/themes';
     return $value;
 });
 
-\add_action('admin_enqueue_scripts', static function (): void {
+\add_action('admin_enqueue_scripts', static function () {
     global $pagenow;
 
     if ('theme-install.php' !== $pagenow) {
